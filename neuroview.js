@@ -58,9 +58,8 @@ function set_sizes()
     $("#container").height($(window).height()-$(".navbar").height())
 }
 
-function make_window_grid(w, h)
+function make_window_grid(n_rows, n_cols)
 {
-
     $("#container").html("");   //clear container html
 
     var c_width = $("#container").width()
@@ -68,9 +67,9 @@ function make_window_grid(w, h)
 
     var container = $("#container")
 
-    for (var i = 0; i < h; i++)
+    for (var i = 0; i < n_rows; i++)
     {
-        for (var j = 0; j < w; j++)
+        for (var j = 0; j < n_cols; j++)
         {
 
             jQuery('<div/>', {
@@ -80,10 +79,11 @@ function make_window_grid(w, h)
             var thisDiv = $('#r_'+i+'_'+j)
 
             thisDiv.css({'position': 'absolute',
-                'left': Math.round(c_width/w*j)+'px',
-                'top': $(".navbar").height()+ Math.round(c_height/h*i)+'px',
-                'height': (Math.round(c_height/h*(i+1))-Math.round(c_height/h*i))+'px',
-                'width': (Math.round(c_width/w*(j+1))-Math.round(c_width/w*j))+'px',
+                'left': Math.round(c_width/n_cols*j)+'px',
+                'top': $(".navbar").height()+ Math.round(c_height/n_rows*i)+'px',
+                'height': (Math.round(c_height/n_rows*(i+1))-Math.round(c_height/n_rows*i))+'px',
+                'width': (Math.round(c_width/n_cols*(j+1))-Math.round(c_width/n_cols*j))+'px',
+                'border': '1px #ddd solid',
             })
 
             
