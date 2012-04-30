@@ -10,12 +10,12 @@ NV_Window.prototype = {
     init: function(div) {
         this.div_name = div
         this.div = $("#"+this.div_name);
-        this.renderer = null
+        this.div.addClass("dropdown")
     },
 
     run_setup: function() {
         
-        var tbg = "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='select01'>Viewer: </label>"
+        var tbg = "<form style='margin-top:20px' class='form-horizontal'><div class='control-group'><label class='control-label' for='select01'>Viewer: </label>"
         tbg+= "<div class='controls'>"
         tbg+= "<select id='select_"+this.div_name+"'>"
         for( plugin in nv_plugins)
@@ -27,15 +27,48 @@ NV_Window.prototype = {
         tbg+="<label class='control-label' for='file_input'>File:</label>"
         tbg+="<div class='controls'>"
         tbg+="<input id='file_"+this.div_name+"' type='file' name='file' /></div></div>"
+        tbg+="<div class='controls'><button id='"+this.div_name+"_button' class='btn btn-primary' type='button'>Start</button></div>"
         tbg+="</form>"
         this.div.html(tbg);
-        this.div.append("<button id='"+this.div_name+"_button' class='btn btn-primary' type='button'>Start</button>");
+
+        //this.div.append();
         var temp_button = $("#"+this.div_name+"_button");
         var _this = this;
         temp_button.click(function(){
             var plugin = $("#select_"+_this.div_name).attr('value');
             var file = $("#file_"+_this.div_name).attr('value').replace(/^.*[\\\/]/, '');
+            console.log("FILE "+file)
             _this.div.html("")
+
+            //make a div to contain the dat.GUI
+            jQuery('<div/>', {
+                'id': 'guidiv'+_this.div_name.slice(1)//in the form guidiv_i_j, where (i,j) is location in the grid
+            }).appendTo("#"+_this.div_name)
+               
+            _this.guiDiv = $('#guidiv'+_this.div_name.slice(1))
+
+            _this.guiDiv.css({'position': 'fixed',
+                'z-index':10,
+                'width': _this.div.width()
+            })
+
+            //make a fixed dropdown menu
+            
+            jQuery('<button/>', {
+                'id': 'button'+_this.div_name.slice(1),//in the form guidiv_i_j, where (i,j) is location in the grid
+                'class': 'btn btn-primary dropdown-toggle',
+                'data-toggle': 'dropdown',
+                'href': "#"+_this.div_name
+            }).appendTo("#"+_this.div_name)
+               
+            _this.button = $('#button'+_this.div_name.slice(1))
+
+            _this.button.css({'position': 'fixed',
+                'z-index':15,
+            })
+
+            _this.button.html("<i class='icon-chevron-down'></i><ul style='z-index:15' class='dropdown-menu'><li onclick=\"NV_open_windows['"+_this.div_name.slice(2)+"'].destroy()\"><a href='#'>Close</a></li></ul>")
+
             _this.div.css({'background-color' : 'black'})
             _this.run_plugin(_this.div_name, plugin, file)
         });
@@ -44,12 +77,32 @@ NV_Window.prototype = {
 
     run_plugin: function(div, plugin, file) {
                     
-        nv_plugins[plugin].run(div, file);
+        var temp_object = nv_plugins[plugin].run(div, file);
+
+        this.gui = temp_object["gui"]
+        this.renderer = temp_object["renderer"]
+        
+        $("."+dat.gui.GUI.CLASS_AUTO_PLACE_CONTAINER)[0].removeChild(this.gui.domElement)
+        this.guiDiv.append(this.gui.domElement)
+    },
+
+    destroy: function() {
+        this.renderer.destroy()
+        this.div.html("")
+        this.div.css({'background-color' : 'white'})
+        this.run_setup()
+        //clearing dead variables
+        this.renderer = null
+        this.gui = null
+        this.button = null
+
     }
+
 }
 
 
-w 
+var NV_open_windows = new Array()
+
 
 $(window).load(function(){set_sizes(); make_window_grid(1, 1)});
 
@@ -61,6 +114,11 @@ function set_sizes()
 function make_window_grid(n_rows, n_cols)
 {
     $("#container").html("");   //clear container html
+    //clear open window array
+    for (i in NV_open_windows)
+    {
+        NV_open_windows[i]=null
+    }
 
     var c_width = $("#container").width()
     var c_height = $("#container").height()
@@ -81,40 +139,15 @@ function make_window_grid(n_rows, n_cols)
             thisDiv.css({'position': 'absolute',
                 'left': Math.round(c_width/n_cols*j)+'px',
                 'top': $(".navbar").height()+ Math.round(c_height/n_rows*i)+'px',
-                'height': (Math.round(c_height/n_rows*(i+1))-Math.round(c_height/n_rows*i))+'px',
-                'width': (Math.round(c_width/n_cols*(j+1))-Math.round(c_width/n_cols*j))+'px',
+                'height': (Math.round(c_height/n_rows*(i+1))-Math.round(c_height/n_rows*i)-2)+'px',
+                'width': (Math.round(c_width/n_cols*(j+1))-Math.round(c_width/n_cols*j)-2)+'px',
                 'border': '1px #ddd solid',
             })
 
-            
-
             var temp_window = new NV_Window('r_'+i+'_'+j);
             temp_window.run_setup();
+            NV_open_windows[i+'_'+j] = temp_window
         }
     }
-}
-
-
-
-var nv_r, nv_cube;
-function run() {
-    nv_r = new X.renderer('r');
-    nv_r.init();
-    
-    // create some CSG primitives.. this is by the way an official example of CSG
-    nv_cube = new X.cube([0,0,0],10,10,10);
-    nv_cube.setColor(1,0,0);
-    nv_cube.setCaption('a cube');
-    
-    nv_r.add(nv_cube);
-   
-    // .. and action!
-    nv_r.render();
-    
-  }
-
-function changeColor(x,y,z) {
-    nv_cube.setColor(x, y, z);
-    nv_r.render();
 }
 

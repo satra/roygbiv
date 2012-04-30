@@ -16,6 +16,8 @@ VolumeViewerPlugin = {
         r.camera().setPosition(120,80,160);
         r.render();
 
+        var gui = new dat.GUI();
+
         r.onShowtime = function() {
           
           //
@@ -26,7 +28,7 @@ VolumeViewerPlugin = {
             
             var modelWasLoaded = false;
             
-            var gui = new dat.GUI();
+            
             var volumegui = gui.addFolder('Volume');
           // ,, switch between slicing and volume rendering
           var vrController = volumegui.add(volume, '_volumeRendering');
@@ -81,7 +83,8 @@ VolumeViewerPlugin = {
           });            	                 
             
         };
-        console.log("YY")
+
+        return {gui: gui, renderer: r}
     }
     
 }

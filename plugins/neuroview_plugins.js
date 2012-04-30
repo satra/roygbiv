@@ -7,7 +7,7 @@ var scriptElt = document.createElement('script');
 scriptElt.type = 'text/javascript';
 scriptElt.src = jsFile;
 document.getElementsByTagName('head')[0].appendChild(scriptElt);
-nv_scripts[jsFile] = jsFile; // or whatever value your prefer
+nv_scripts[jsFile] = jsFile; // or whatever value you prefer
 }
 
 var nv_plugins = new Array()
