@@ -48,8 +48,11 @@ NV_Window.prototype = {
             _this.guiDiv = $('#guidiv'+_this.div_name.slice(1))
 
             _this.guiDiv.css({'position': 'fixed',
-                'z-index':10,
-                'width': _this.div.width()
+                'z-index': 10,
+                'width': '245px',
+                'right': $("#container").width()-_this.div.css("left").slice(0,-2)-_this.div.css("width").slice(0,-2)-2,
+                'top': 1+parseInt(_this.div.css("top").slice(0,-2))
+                
             })
 
             //make a fixed dropdown menu
