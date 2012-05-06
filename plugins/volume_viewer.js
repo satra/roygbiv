@@ -15,7 +15,7 @@ VolumeViewerPlugin = {
 
       // create GUI
       
-      
+      console.log("SHOW TIME!");
       var volumegui = gui.addFolder('Volume');
       // ,, switch between slicing and volume rendering
       var vrController = volumegui.add(volume, '_volumeRendering');
@@ -47,37 +47,37 @@ VolumeViewerPlugin = {
         }
         
         volume.modified();
-        r.render();
+        renderer.render();
       });
       opacityController.onChange(function(value) {
 
         volume.modified();
-        r.render();
+        renderer.render();
       });
       lowerThresholdController.onChange(function(value) {
 
         volume.modified();
-        r.render();
+        renderer.render();
       });
       upperThresholdController.onChange(function(value) {
 
         volume.modified();
-        r.render();
+        renderer.render();
       });
       sliceXController.onChange(function(value) {
 
         volume.modified();
-        r.render();
+        renderer.render();
       });
       sliceYController.onChange(function(value) {
 
         volume.modified();
-        r.render();
+        renderer.render();
       });
       sliceZController.onChange(function(value) {
 
         volume.modified();
-        r.render();
+        renderer.render();
       });
       
     };
@@ -174,9 +174,11 @@ VolumeViewerPlugin = {
           
           console.log(volume);
           
+          renderer.onShowtime();
 
           renderer.add(volume);
           renderer.render();
+          console.log("RENDER");
           
           worker.terminate(); // bye, bye
           
