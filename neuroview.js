@@ -40,19 +40,19 @@ NV_Window.prototype = {
     var _this = this;
     file_button.change(function(evt) {
 
-      var plugin = jQuery("#select_" + _this.div_name).attr('value');
-      var files = evt.target.files;
+      _this.plugin = jQuery("#select_" + _this.div_name).attr('value');
+      _this.file = (evt.target.files)[0];
       create_plugin_UI(_this);
-      _this.run_plugin(_this.div_name, plugin, files[0])
+      _this.run_plugin(_this.div_name, _this.plugin, _this.file)
 
     });
     temp_button.click(function() {
 
-      var plugin = jQuery("#select_" + _this.div_name).attr('value');
-      var file = jQuery("#file_" + _this.div_name).attr('value').replace(
+      _this.plugin = jQuery("#select_" + _this.div_name).attr('value');
+      _this.file = jQuery("#file_" + _this.div_name).attr('value').replace(
           /^.*[\\\/]/, '');
       create_plugin_UI(_this);
-      _this.run_plugin(_this.div_name, plugin, file)
+      _this.run_plugin(_this.div_name, _this.plugin, _this.file)
     });
     
   },
@@ -81,7 +81,29 @@ NV_Window.prototype = {
     this.renderer = null
     this.gui = null
     this.button = null
+    this.plugin = null
+    this.file = null
+  },
+
+  serialize: function() {
+    var serial_obj = {};
+    //if this.plugin is null, no plugin is running
+    serial_obj['plugin'] = this.plugin
+    serial_obj['file'] = this.file
+    return serial_obj;
+  },
+
+  load: function(load_obj) {
+
+    if(load_obj['plugin'])
+    {
+      create_plugin_UI(this)
+      this.run_plugin(this.div_name, load_obj['plugin'], load_obj['file'])
+
+    }
+
   }
+
 };
 
 function create_plugin_UI(this_window) {
@@ -138,6 +160,7 @@ function create_plugin_UI(this_window) {
 
 }
 
+var NV_rows, NV_cols
 var NV_open_windows = new Array()
 
 
@@ -153,16 +176,57 @@ function set_sizes() {
       jQuery(window).height() - jQuery(".navbar").height())
 }
 
-function make_window_grid(n_rows, n_cols) {
-
+function clear_windows() {
   jQuery("#container").html(""); // clear container html
   for (i in NV_open_windows) {
     NV_open_windows[i] = null
   }
+}
+
+function save_windows() {
+  var save_obj = {}
+  save_obj['rows'] = NV_rows
+  save_obj['cols'] = NV_cols
+  for ( var i = 0; i < NV_rows; i++) {
+    for ( var j = 0; j < NV_cols; j++) {
+
+      save_obj[i + '_' + j] = NV_open_windows[i + '_' + j]!=null ? NV_open_windows[i + '_' + j].serialize() : null;
+
+    }
+  }
+
+  localStorage.setItem("NV_temp", JSON.stringify(save_obj))
+  console.log(JSON.stringify(save_obj))
   
+}
+
+function load_windows() {
+  var load_obj = JSON.parse(localStorage.getItem("NV_temp"));
+  NV_rows = load_obj['rows']
+  NV_cols = load_obj['cols']
+  make_window_grid(NV_rows, NV_cols)
+  for ( var i = 0; i < NV_rows; i++) {
+    for ( var j = 0; j < NV_cols; j++) {
+
+      if(NV_open_windows[i + '_' + j] && load_obj[i + '_' + j])
+      {
+        NV_open_windows[i + '_' + j].load(load_obj[i + '_' + j])
+      }
+
+    }
+  }
+  
+
+}
+
+function make_window_grid(n_rows, n_cols) {
+
+  clear_windows()
   var container = jQuery("#container")
   var c_width = container.width()
   var c_height = container.height()
+  NV_rows = n_rows
+  NV_cols = n_cols
   for ( var i = 0; i < n_rows; i++) {
     for ( var j = 0; j < n_cols; j++) {
       
