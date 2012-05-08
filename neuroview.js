@@ -18,48 +18,96 @@ NV_Window.prototype = {
   
   run_setup: function() {
 
-    var tbg = "<form style='margin-top:20px' class='form-horizontal'><div class='control-group'><label class='control-label' for='select01'>Viewer: </label>"
+    var tbg = "<form style='margin-top:20px' class='form-horizontal'>"
+      
+    tbg += "<div class='control-group'>"
+    tbg += "<label class='control-label' for='select01'>Viewer: </label>"
     tbg += "<div class='controls'>"
     tbg += "<select id='select_" + this.div_name + "'>"
     for (plugin in nv_plugins) {
       tbg += "<option>" + nv_plugins[plugin].prototype.name+ "</option>";
     }
     tbg += "</select></div></div>"
-    tbg += "<div class='control-group'>"
-    tbg += "<label class='control-label' for='file_input'>File:</label>"
-    tbg += "<div class='controls'>"
-    tbg += "<input id='file_" + this.div_name +
-        "' type='file' name='file' /></div></div>"
+
+    tbg += "<div class='controls' style = 'width: 200px; margin-top:20px; margin-bottom:20px'><hr></div>"
+    
+    tbg += "<div id='variable_" + this.div_name + "'></div>"
+    
+    tbg += "</form>"
+    this.div.html(tbg)
+    
+    for (plugin in nv_plugins) {
+      this.create_plugin_inputs(nv_plugins[plugin].prototype.name)
+      break
+
+    }
+    var _this = this
+    jQuery("#select_" + this.div_name).change(function(evt) {
+      _this.create_plugin_inputs(evt.target.value)
+    })
+
+  },
+
+  create_plugin_inputs: function(plugin) {
+    var tbg = ""
+    var plugin_inputs = nv_plugins[plugin].prototype.input_rules
+    for (input in plugin_inputs)
+    {
+      var input_obj = plugin_inputs[input]
+      switch (input_obj['type'])
+      {
+        case 'file':
+          tbg += "<div class='control-group'>"
+          tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + "</label>"
+          tbg += "<div class='controls'>"
+          tbg += "<input id='file_" + this.div_name +
+                "_" + input + "' type='file' name='file' /></div></div>"
+          break
+      }
+
+    }
     tbg += "<div class='controls'><button id='" + this.div_name +
         "_button' class='btn btn-primary' type='button'>Start</button></div>"
-    tbg += "</form>"
-    this.div.html(tbg);
+    jQuery("#variable_" + this.div_name).html(tbg)
     
     var temp_button = jQuery("#" + this.div_name + "_button");
-    var file_button = jQuery("#file_" + this.div_name);
+    //var file_button = jQuery("#file_" + this.div_name);
     var _this = this;
-    file_button.change(function(evt) {
+    /*file_button.change(function(evt) {
 
       _this.plugin = jQuery("#select_" + _this.div_name).attr('value');
       _this.file = (evt.target.files)[0];
       create_plugin_UI(_this);
       _this.run_plugin(_this.div_name, _this.plugin, _this.file)
 
-    });
+    });*/
     temp_button.click(function() {
+      console.log("HERE");
 
       _this.plugin = jQuery("#select_" + _this.div_name).attr('value');
-      _this.file = jQuery("#file_" + _this.div_name).attr('value').replace(
-          /^.*[\\\/]/, '');
+      var inputs = []
+      for(var i = 0; i < nv_plugins[plugin].prototype.input_rules.length; i++)
+      {
+        switch (input_obj['type'])
+        {
+          case 'file':
+            inputs.push(document.getElementById("file_" + _this.div_name + "_" + i).files[0])
+            break
+
+        }
+      }
       create_plugin_UI(_this);
-      _this.run_plugin(_this.div_name, _this.plugin, _this.file)
+      _this.run_plugin(_this.div_name, _this.plugin, inputs)
     });
+
     
+          
+
   },
   
-  run_plugin: function(div, plugin, file) {
+  run_plugin: function(div, plugin, inputs) {
     this.plugin = new nv_plugins[plugin]()
-    this.plugin.run(div, file)  
+    this.plugin.run(div, inputs)  
     
     jQuery("." + dat.gui.GUI.CLASS_AUTO_PLACE_CONTAINER)[0]
         .removeChild(this.plugin.gui.domElement)
@@ -85,7 +133,7 @@ NV_Window.prototype = {
       var serial_obj = this.plugin.serialize()
       //add essential items
       serial_obj['plugin'] = this.plugin.name
-      serial_obj['file'] = this.plugin.file
+      serial_obj['inputs'] = this.plugin.inputs
       return serial_obj;
     }
     return null
@@ -97,7 +145,7 @@ NV_Window.prototype = {
     if(load_obj['plugin'])
     {
       create_plugin_UI(this)
-      this.run_plugin(this.div_name, load_obj['plugin'], load_obj['file'])
+      this.run_plugin(this.div_name, load_obj['plugin'], load_obj['inputs'])
       this.plugin.load(load_obj)
     }
 
