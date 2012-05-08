@@ -1,22 +1,31 @@
-VolumeViewerPlugin = {
-  name: "Volume Viewer",
-  filetypes: ["nrrd"],
-  
-  setupRenderer: function(div) {
+VolumeViewerPlugin = function () {
+  this.init()
+}
 
-    console.log(div);
-    
-    renderer = new X.renderer(div);
-    renderer.init();
+VolumeViewerPlugin.prototype.name = "Volume Viewer"
 
-    var gui = new dat.GUI();
+VolumeViewerPlugin.prototype.filetypes = ['nrrd']
+
+VolumeViewerPlugin.prototype.init = function() {
+
+}
+
+VolumeViewerPlugin.prototype.setupRenderer = function(div) {
+  console.log(div);
     
-    renderer.onShowtime = function() {
+    this.renderer = new X.renderer(div);
+    this.renderer.init();
+
+    this.gui = new dat.GUI();
+
+    var _this = this
+    
+    this.renderer.onShowtime = function() {
 
       // create GUI
       
       console.log("SHOW TIME!");
-      var volumegui = gui.addFolder('Volume');
+      var volumegui = _this.gui.addFolder('Volume');
       // ,, switch between slicing and volume rendering
       var vrController = volumegui.add(volume, '_volumeRendering');
       // .. configure the volume rendering opacity
@@ -47,153 +56,160 @@ VolumeViewerPlugin = {
         }
         
         volume.modified();
-        renderer.render();
+        _this.renderer.render();
       });
       opacityController.onChange(function(value) {
 
         volume.modified();
-        renderer.render();
+        _this.renderer.render();
       });
       lowerThresholdController.onChange(function(value) {
 
         volume.modified();
-        renderer.render();
+        _this.renderer.render();
       });
       upperThresholdController.onChange(function(value) {
 
         volume.modified();
-        renderer.render();
+        _this.renderer.render();
       });
       sliceXController.onChange(function(value) {
 
         volume.modified();
-        renderer.render();
+        _this.renderer.render();
       });
       sliceYController.onChange(function(value) {
 
         volume.modified();
-        renderer.render();
+        _this.renderer.render();
       });
       sliceZController.onChange(function(value) {
 
         volume.modified();
-        renderer.render();
+        _this.renderer.render();
       });
       
     };
 
-    return {renderer: renderer, gui: gui}
-    
-  },
+   
+
+}
+
+VolumeViewerPlugin.prototype.run = function(div, file) {
+  this.file = file
+  this.setupRenderer(div); // make sure we have a renderer
+  this.loadFile(this.file);
+
+}
+
+VolumeViewerPlugin.prototype.loadFile = function(file) {
+
+  console.log('yo', file);
   
-  run: function(div, file) {
-
-    var attributes = this.setupRenderer(div); // make sure we have a renderer
-    this.loadFile(file);
-
-    return attributes;
-    
-  },
+  var reader = new FileReader();
   
-  loadFile: function(file) {
+  // Handle errors that might occur while reading the file (before upload).
+  reader.onerror = function(evt) {
 
-    console.log('yo', file);
+    var message = 'Error';
     
-    var reader = new FileReader();
+    // REF: http://www.w3.org/TR/FileAPI/#ErrorDescriptions
+    switch (evt.target.error.code) {
+    case 1:
+      message = file.name + " not found.";
+      break;
     
-    // Handle errors that might occur while reading the file (before upload).
-    reader.onerror = function(evt) {
-
-      var message = 'Error';
-      
-      // REF: http://www.w3.org/TR/FileAPI/#ErrorDescriptions
-      switch (evt.target.error.code) {
-      case 1:
-        message = file.name + " not found.";
-        break;
-      
-      case 2:
-        message = file.name + " has changed on disk, please re-try.";
-        break;
-      
-      case 3:
-        messsage = "Upload cancelled.";
-        break;
-      
-      case 4:
-        message = "Cannot read " + file.name + ".";
-        break;
-      
-      case 5:
-        message = "File too large for browser to upload.";
-        break;
-      }
-      
-      console.log(message);
-    };
+    case 2:
+      message = file.name + " has changed on disk, please re-try.";
+      break;
     
-    reader.onload = (function(file) {
+    case 3:
+      messsage = "Upload cancelled.";
+      break;
+    
+    case 4:
+      message = "Cannot read " + file.name + ".";
+      break;
+    
+    case 5:
+      message = "File too large for browser to upload.";
+      break;
+    }
+    
+    console.log(message);
+  };
 
-      return function(e) {
+  var _this = this;
+  
+  reader.onload = (function(file) {
 
-        console.log('whatsup');
-        
-        var data = e.target.result;
-        
-        var base64StartIndex = data.indexOf(',') + 1;
-        
-        //
-        //
-        //
-        file = file.name;
-        data = window.atob(data.substring(base64StartIndex));
-        
-        var fileExtension = file.split('.')[1];
-        
-        var worker = new Worker('plugins/X.bootstrap.js');
-        worker.postMessage([fileExtension, data]); // start the worker
-        
-        worker.onmessage = function(event) {
+    return function(e) {
 
-          // callback for: worker is done
-          console.log('worker done');
-          
-          if (!event.data) {
-            throw new Error('Loading failed.');
-          }
-          
-          volume = event.data;
-          
-          if (typeof volume['_volumeRendering'] != 'undefined') {
-            
-            // this is a X.volume
-            
-            volume = new X.volume(volume);
-            
-          }
-          
-          console.log(volume);
-          
-          renderer.onShowtime();
+      console.log('whatsup');
+      
+      var data = e.target.result;
+      
+      var base64StartIndex = data.indexOf(',') + 1;
+      
+      //
+      //
+      //
+      file = file.name;
+      data = window.atob(data.substring(base64StartIndex));
+      
+      var fileExtension = file.split('.')[1];
+      
+      var worker = new Worker('plugins/X.bootstrap.js');
+      worker.postMessage([fileExtension, data]); // start the worker
+      
+      worker.onmessage = function(event) {
 
-          renderer.add(volume);
-          renderer.render();
-          console.log("RENDER");
+        // callback for: worker is done
+        console.log('worker done');
+        
+        if (!event.data) {
+          throw new Error('Loading failed.');
+        }
+        
+        volume = event.data;
+        
+        if (typeof volume['_volumeRendering'] != 'undefined') {
           
-          worker.terminate(); // bye, bye
+          // this is a X.volume
           
-        };
+          volume = new X.volume(volume);
+          
+        }
+        
+        console.log(volume);
+        
+        _this.renderer.onShowtime();
+
+        _this.renderer.add(volume);
+        _this.renderer.render();
+        console.log("RENDER");
+        
+        worker.terminate(); // bye, bye
         
       };
       
-    })(file);
+    };
     
-    // Start reading the image off disk into a Data URI format.
-    console.log('file', file);
-    reader.readAsDataURL(file);
-    console.log('file2', file);
-  }
+  })(file);
+  
+  // Start reading the image off disk into a Data URI format.
+  console.log('file', file);
+  reader.readAsDataURL(file);
+  console.log('file2', file);
+}
 
-};
+VolumeViewerPlugin.prototype.serialize = function() {
+  var serial_obj = {}
+  return serial_obj
+}
 
-nv_plugins[VolumeViewerPlugin.name] = VolumeViewerPlugin;
+VolumeViewerPlugin.prototype.load = function(load_obj) {
+
+}
+
+nv_plugins[VolumeViewerPlugin.prototype.name] = VolumeViewerPlugin;

@@ -22,7 +22,7 @@ NV_Window.prototype = {
     tbg += "<div class='controls'>"
     tbg += "<select id='select_" + this.div_name + "'>"
     for (plugin in nv_plugins) {
-      tbg += "<option>" + nv_plugins[plugin].name + "</option>";
+      tbg += "<option>" + nv_plugins[plugin].prototype.name+ "</option>";
     }
     tbg += "</select></div></div>"
     tbg += "<div class='control-group'>"
@@ -58,39 +58,38 @@ NV_Window.prototype = {
   },
   
   run_plugin: function(div, plugin, file) {
-
-    var temp_object = nv_plugins[plugin].run(div, file);
+    this.plugin = new nv_plugins[plugin]()
+    this.plugin.run(div, file)  
     
-    this.gui = temp_object["gui"]
-    this.renderer = temp_object["renderer"]
-
     jQuery("." + dat.gui.GUI.CLASS_AUTO_PLACE_CONTAINER)[0]
-        .removeChild(this.gui.domElement)
-    this.guiDiv.append(this.gui.domElement)
+        .removeChild(this.plugin.gui.domElement)
+    this.guiDiv.append(this.plugin.gui.domElement)
   },
   
   destroy: function() {
 
-    this.renderer.destroy()
+    this.plugin.renderer.destroy()
     this.div.html("")
     this.div.css({
       'background-color': 'white'
     })
     this.run_setup()
     // clearing dead variables
-    this.renderer = null
-    this.gui = null
     this.button = null
     this.plugin = null
-    this.file = null
   },
 
   serialize: function() {
-    var serial_obj = {};
-    //if this.plugin is null, no plugin is running
-    serial_obj['plugin'] = this.plugin
-    serial_obj['file'] = this.file
-    return serial_obj;
+    if(this.plugin)
+    {
+      var serial_obj = this.plugin.serialize()
+      //add essential items
+      serial_obj['plugin'] = this.plugin.name
+      serial_obj['file'] = this.plugin.file
+      return serial_obj;
+    }
+    return null
+   
   },
 
   load: function(load_obj) {
@@ -99,7 +98,7 @@ NV_Window.prototype = {
     {
       create_plugin_UI(this)
       this.run_plugin(this.div_name, load_obj['plugin'], load_obj['file'])
-
+      this.plugin.load(load_obj)
     }
 
   }
