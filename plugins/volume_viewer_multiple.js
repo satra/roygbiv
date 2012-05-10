@@ -1,16 +1,19 @@
-VolumeViewerPlugin = function () {
+VolumeViewerPluginMultiple = function () {
   this.init()
 }
 
-VolumeViewerPlugin.prototype.name = "Volume Viewer"
+VolumeViewerPluginMultiple.prototype.name = "Volume Viewer Multiple"
 
-VolumeViewerPlugin.prototype.input_rules = [{type: 'file', name: 'Data File', filetypes: ['nrrd']}]
+VolumeViewerPluginMultiple.prototype.input_rules = [{type: 'file', name: 'Data File 1', filetypes: ['nrrd']}, 
+  {type: 'file', name: 'Data File 2', filetypes: ['nrrd']},
+  {type: 'file', name: 'Data File 3', filetypes: ['nrrd']},
+  {type: 'file', name: 'Data File 4', filetypes: ['nrrd']}]
 
-VolumeViewerPlugin.prototype.init = function() {
+VolumeViewerPluginMultiple.prototype.init = function() {
 
 }
 
-VolumeViewerPlugin.prototype.setupRenderer = function(div) {
+VolumeViewerPluginMultiple.prototype.setupRenderer = function(div) {
     
     this.renderer = new X.renderer(div);
     this.renderer.init();
@@ -93,14 +96,14 @@ VolumeViewerPlugin.prototype.setupRenderer = function(div) {
 
 }
 
-VolumeViewerPlugin.prototype.run = function(div, inputs) {
+VolumeViewerPluginMultiple.prototype.run = function(div, inputs) {
   this.inputs = inputs
   this.setupRenderer(div); // make sure we have a renderer
   this.loadFile(this.inputs);
 
 }
 
-VolumeViewerPlugin.prototype.loadFile = function(file) {
+VolumeViewerPluginMultiple.prototype.loadFile = function(file) {
 
   
   var reader = new FileReader();
@@ -193,13 +196,13 @@ VolumeViewerPlugin.prototype.loadFile = function(file) {
   reader.readAsDataURL(file[0]);
 }
 
-VolumeViewerPlugin.prototype.serialize = function() {
+VolumeViewerPluginMultiple.prototype.serialize = function() {
   var serial_obj = {}
   return serial_obj
 }
 
-VolumeViewerPlugin.prototype.load = function(load_obj) {
+VolumeViewerPluginMultiple.prototype.load = function(load_obj) {
 
 }
 
-nv_plugins[VolumeViewerPlugin.prototype.name] = VolumeViewerPlugin;
+nv_plugins[VolumeViewerPluginMultiple.prototype.name] = VolumeViewerPluginMultiple;
