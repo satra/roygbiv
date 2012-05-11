@@ -63,6 +63,13 @@ NV_Window.prototype = {
           tbg += "<input id='file_" + this.div_name +
                 "_" + input + "' type='file' name='file' /></div></div>"
           break
+		case 'text':
+		  tbg += "<div class='control-group'>"
+          tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + "</label>"
+          tbg += "<div class='controls'>"
+          tbg += "<input id='file_" + this.div_name +
+                "_" + input + "' type='text' name='file' /></div></div>"
+          break
       }
 
     }
@@ -93,7 +100,9 @@ NV_Window.prototype = {
           case 'file':
             inputs.push(document.getElementById("file_" + _this.div_name + "_" + i).files[0])
             break
-
+		  case 'text':
+			inputs.push(document.getElementById("file_" + _this.div_name + "_" + i).value);
+			break
         }
       }
       create_plugin_UI(_this);

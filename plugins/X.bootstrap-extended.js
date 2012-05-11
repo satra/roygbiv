@@ -40,9 +40,16 @@ function parse(data) {
   
 }
 
+self.onmessage = function(event) {
 
-function getParser(extension){
+  var _data = event.data;
+  var extension = _data[0].toUpperCase();
+  var stream = _data[1];
+   
+  xObject = new X.object();
+
   switch (extension) {
+
   case 'VTK':
     xParser = new X.parserVTK();
     break;
@@ -53,84 +60,35 @@ function getParser(extension){
     xParser = new X.parserSTL();
     break;
   case 'NRRD':
+    xObject = new X.volume();
     xParser = new X.parserNRRD();
     break;
   case 'MGH':
+    xObject = new X.volume();
     xParser = new X.parserMGZ();
     break;
   case 'MGZ':
+    xObject = new X.volume();
     xParser = new X.parserMGZ();
     break;
+  case 'CRV':
+	xObject = new X.scalars();
+	xParser = new X.parserCRW();
+  case 'TXT':
+	xParser = new X.parserLUT();
+	xColorTable = new X.colorTable();
+	xParser.parse(this, stream, xColorTable);
+	self.postMessage(xColorTable);
+	return;
   default:
     xParser = new X.parserFSM();
   }
-  return xParser;
-}
-
-function simpleLoad(extension, stream){
-  
-  xObject = new X.object();
-
-  switch (extension) {
-  case 'NRRD':
-    xObject = new X.volume();
-    break;
-  case 'MGH':
-    xObject = new X.volume();
-    break;
-  case 'MGZ':
-    xObject = new X.volume();
-    break;
+  if(_data.length > 2 && _data[2] == 'LABELMAP'){
+	xObject = new X.labelMap();
   }
   
-  xParser = getParser(extension);
-  xParser.parse(xObject, data);
-  self.postMessage(xObject);
-  //parse(stream);
-}
-
-
-
-
-// Order of data Volume, LabelMap, ColorMap
-// data ['filetype', file || url, 'filetype', file || url, 'url of colormap'] 
-function volumeLoad(data){
-	xVolume = new X.volume();
-	xLabelMap = xVolume.labelMap();
-	
-	if(data[0].toUpperCase() == 'URL'){
-		xVolume.load(data[1]);
-	}else{
-		xVParser = getParser(data[0].toUpperCase());
-		xVParser.parse(xVolume,data[1]);
-	}
-	
-	if(data[1].toUpperCase() == 'URL'){
-		xLabelMap.load(data[2]);
-	}else{
-		xLParser = getParser(data[2].toUpperCase());
-		xLParser.parse(xLabelMap, data[3]);
-	
-	}
-	xLabelMap.setColorTable(data[4]);
-	self.postMessage(xVolume);
-}
-
-
-
-
-
-self.onmessage = function(event) {
-
-  var _data = event.data;
-  var type = _data[0].toLowerCase();
-  switch(type){
-    switch "volume":
-		volumeLoad(_data.slice(1, _data.length);
-		break;
-	default: 
-		simpleLoad(_data[1].toUpperCase(), _data[2]);
-		break;
-  }
-    
+  // .. start the loading
+  // load('skull.vtk', parse);
+  parse(stream);
+  
 };
