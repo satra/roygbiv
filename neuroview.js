@@ -70,6 +70,17 @@ NV_Window.prototype = {
           tbg += "<input id='file_" + this.div_name +
                 "_" + input + "' type='text' name='file' /></div></div>"
           break
+		case 'file-url':
+		  tbg += "<div class='control-group'>"
+		  tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + "</label>"
+          tbg += "<div class='controls'>"
+          tbg += "<input id='file_" + this.div_name +
+                "_" + input + "_0' type='file' name='file' /></div>";
+          tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + " URL</label>"
+          tbg += "<div class='controls'>"
+          tbg += "<input id='file_" + this.div_name +
+                "_" + input + "_1' type='text' name='file' /></div></div>"
+          break
       }
 
     }
@@ -103,6 +114,10 @@ NV_Window.prototype = {
 		  case 'text':
 			inputs.push(document.getElementById("file_" + _this.div_name + "_" + i).value);
 			break
+		  case 'file-url':
+			if(document.getElementById("file_" + _this.div_name + "_" + i+"_0").value != ''){
+				inputs.push(document.getElementById("file_" + _this.div_name + "_" + i+"_0").files[0]);
+			}else{inputs.push(document.getElementById("file_" + _this.div_name + "_" + i+"_1").value);}
         }
       }
       create_plugin_UI(_this);

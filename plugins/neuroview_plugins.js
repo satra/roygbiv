@@ -15,3 +15,4 @@ var nv_plugins = new Array()
 nv_include("plugins/volume_viewer.js");
 nv_include("plugins/volume_viewer_multiple.js");
 nv_include("plugins/multimodal_viewer.js");
+nv_include("plugins/volume_url_viewer.js");

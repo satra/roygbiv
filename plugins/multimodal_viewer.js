@@ -1,5 +1,7 @@
 MultiModalViewerPlugin = function () {
   this.init()
+  this.xObjs =  {'volumes': [], 'surfaces':[], 'tracks': []};
+  
 }
 
 MultiModalViewerPlugin.prototype.name = "MultiModal Viewer"
@@ -9,11 +11,7 @@ MultiModalViewerPlugin.prototype.input_rules = [{type: 'file', name: 'Volume', f
   {type: 'file', name: 'ColorMap', filetypes: ['txt']}] /*,
   {type: 'file', name: 'Surface', filetypes: ['fsm']},
   {type: 'file', name: 'Curve', filetypes: ['crv']},
-  {type: 'file', name: 'Track', filetypes: ['trk', 'vtk']},  {type: 'text', name:"Transform Matrix"}]*/
-
-MultiModalViewerPlugin.prototype.xObjs = {'volumes': [], 'surfaces':[], 'tracks': []};  
-  
-  
+  {type: 'file', name: 'Track', filetypes: ['trk', 'vtk']},  {type: 'text', name:"Transform Matrix"}]*/  
   
 MultiModalViewerPlugin.prototype.init = function() {
 
@@ -107,6 +105,7 @@ MultiModalViewerPlugin.prototype.setupRenderer = function(div) {
         ren.render();
       });
 	}
+	/*
 	function addTrack(trackgui, track){
 	   var trackVisibleController = trackgui.add(track, '_visible');
        var trackLengthThresholdController = trackgui.add(track.scalars(),
@@ -216,6 +215,8 @@ MultiModalViewerPlugin.prototype.setupRenderer = function(div) {
 		  
 	}
 	
+	*/
+	
 	function addSection(gui, addFunc, name){
 	  var sectiongui = gui.addFolder(name);
 	  sectiongui.open();
@@ -235,8 +236,8 @@ MultiModalViewerPlugin.prototype.setupRenderer = function(div) {
 
       // create GUI
       addSection(_this.gui, addVolume, 'volumes');
-	  addSection(_this.gui, addTrack, 'tracks');
-	  addSection(_this.gui, addSurface, 'surfaces');
+	  //addSection(_this.gui, addTrack, 'tracks');
+	  //addSection(_this.gui, addSurface, 'surfaces');
 	  
 	  
 	  //Add curvs ?!
@@ -327,7 +328,6 @@ MultiModalViewerPlugin.prototype.loadFiles = function(files) {
 			output = new X.labelMap(output);
 			_this.xObjs['volume'][0].labelMap() = output;
 		}else{
-			output = new X.colorTable(output);
 			_this.xObjs['volume'][0].labelMap().setColorTable(output);
 			_this.renderer.onShowtime();
             _this.renderer.render();
@@ -342,6 +342,8 @@ MultiModalViewerPlugin.prototype.loadFiles = function(files) {
   })(files[i])
 	reader.readAsDataURL(files[i]);
   }
+  
+  
   
   
   

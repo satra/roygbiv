@@ -75,9 +75,10 @@ self.onmessage = function(event) {
 	xObject = new X.scalars();
 	xParser = new X.parserCRW();
   case 'TXT':
+	xObject = new X.labelMap();
 	xParser = new X.parserLUT();
-	xColorTable = new X.colorTable();
-	xParser.parse(this, stream, xColorTable);
+	xColorTable = xObject.colorTable;
+	xParser.parse(xObject, stream, xColorTable);
 	self.postMessage(xColorTable);
 	return;
   default:
