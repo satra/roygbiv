@@ -6,9 +6,9 @@ MultiModalViewerPlugin = function () {
 
 MultiModalViewerPlugin.prototype.name = "MultiModal Viewer"
 
-MultiModalViewerPlugin.prototype.input_rules = [{type: 'file', name: 'Volume', filetypes: ['nrrd', 'mgh', 'mgz']}, 
-  {type: 'file', name: 'LabelMap', filetypes: ['nrrd', 'mgh', 'mgz']},
-  {type: 'file', name: 'ColorMap', filetypes: ['txt']}] /*,
+MultiModalViewerPlugin.prototype.input_rules = [{type: 'file-url', name: 'Volume', filetypes: ['nrrd', 'mgh', 'mgz']}, 
+  {type: 'file-url', name: 'LabelMap', filetypes: ['nrrd', 'mgh', 'mgz']},
+  {type: 'file-url', name: 'ColorMap', filetypes: ['txt']}] /*,
   {type: 'file', name: 'Surface', filetypes: ['fsm']},
   {type: 'file', name: 'Curve', filetypes: ['crv']},
   {type: 'file', name: 'Track', filetypes: ['trk', 'vtk']},  {type: 'text', name:"Transform Matrix"}]*/  
@@ -17,12 +17,17 @@ MultiModalViewerPlugin.prototype.init = function() {
 
 }
 
+MultiModalViewerPlugin.prototype.destroy = function(){
+	this.gui.destroy();
+}
+
+
 MultiModalViewerPlugin.prototype.setupRenderer = function(div) {
     
     this.renderer = new X.renderer(div);
     this.renderer.init();
 
-    this.gui = new dat.GUI();
+    
 
     var _this = this
     
@@ -98,11 +103,11 @@ MultiModalViewerPlugin.prototype.setupRenderer = function(div) {
 	  //labelmap callbacks
 	  labelMapVisibleController.onChange(function(value) {
         volume.labelMap().modified();
-        ren.render();
+        _this.renderer.render();
       });
       labelMapOpacityController.onChange(function(value) {
         volume.labelMap().modified();
-        ren.render();
+        _this.renderer.render();
       });
 	}
 	/*
@@ -217,15 +222,15 @@ MultiModalViewerPlugin.prototype.setupRenderer = function(div) {
 	
 	*/
 	
-	function addSection(gui, addFunc, name){
+	function addSection(gui, addFunc, name, _this){
 	  var sectiongui = gui.addFolder(name);
 	  sectiongui.open();
-	  if(this.xObjs[name].length == 1){
-		addFunc(sectiongui, xObjs[name][1]);
+	  if(_this.xObjs[name].length == 1){
+		addFunc(sectiongui, _this.xObjs[name][0]);
 	  }else{
-		for(var i=0; i< this.xObjs[name].length; i++){
+		for(var i=0; i< _this.xObjs[name].length; i++){
 			var innervgui = sectiongui.addFolder(name+i);
-			addFunc(innervgui, this.xObjs[name][i]);
+			addFunc(innervgui, _this.xObjs[name][i]);
 		}
       }
 	}
@@ -233,9 +238,9 @@ MultiModalViewerPlugin.prototype.setupRenderer = function(div) {
 	
 	
     this.renderer.onShowtime = function() {
-
+	  _this.gui = new dat.GUI();
       // create GUI
-      addSection(_this.gui, addVolume, 'volumes');
+      addSection(_this.gui, addVolume, 'volumes', _this);
 	  //addSection(_this.gui, addTrack, 'tracks');
 	  //addSection(_this.gui, addSurface, 'surfaces');
 	  
@@ -256,6 +261,19 @@ MultiModalViewerPlugin.prototype.run = function(div, inputs) {
 
 MultiModalViewerPlugin.prototype.loadFiles = function(files) {
   var types = ['volume', 'labelMap', 'colorTable'];
+  if(typeof files[0] == 'string' && typeof files[1] == 'string' && typeof files[2] == 'string'){
+	var volume = new X.volume();
+	volume.load(files[0]);
+	volume.labelMap().load(files[1]);
+	volume.labelMap().setColorTable(files[2]);
+	this.xObjs['volumes'].push(volume);
+	this.renderer.add(volume);
+	this.renderer.render();
+	
+	
+  }
+  
+  
   for(var i=0; i<files.length;i++){
 	var reader = new FileReader();
 	
@@ -322,13 +340,14 @@ MultiModalViewerPlugin.prototype.loadFiles = function(files) {
         if(i == 0){
 			output = new X.volume(output);
 			_this.xObjs['volume'].push(output);
-			_this.renderer.add(volume);
+			
 			
 		}else if(i == 1){
 			output = new X.labelMap(output);
 			_this.xObjs['volume'][0].labelMap() = output;
 		}else{
 			_this.xObjs['volume'][0].labelMap().setColorTable(output);
+			_this.renderer.add(volume);
 			_this.renderer.onShowtime();
             _this.renderer.render();
         

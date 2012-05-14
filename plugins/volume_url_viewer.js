@@ -1,5 +1,6 @@
 VolumeURLViewerPlugin = function () {
   this.init()
+  
 }
 
 VolumeURLViewerPlugin.prototype.name = "Volume URL Viewer"
@@ -14,16 +15,13 @@ VolumeURLViewerPlugin.prototype.setupRenderer = function(div) {
     
     this.renderer = new X.renderer(div);
     this.renderer.init();
-
-    this.gui = new dat.GUI();
-
+ 
     var _this = this
-    
+   	
     this.renderer.onShowtime = function() {
-
-      // create GUI
-      
-      var volumegui = _this.gui.addFolder('Volume');
+	  _this.gui = new dat.GUI();
+	  
+	  var volumegui = _this.gui.addFolder('Volume');
       // ,, switch between slicing and volume rendering
       var vrController = volumegui.add(volume, '_volumeRendering');
       // .. configure the volume rendering opacity
@@ -101,14 +99,15 @@ VolumeURLViewerPlugin.prototype.run = function(div, inputs) {
 }
 
 VolumeURLViewerPlugin.prototype.loadFile = function(file) {
-
+   console.log(file);
   if(typeof file == 'string'){
 	  volume = new X.volume();
 	  volume.load(file);
-	  this.renderer.onShowtime();
 	  this.renderer.add(volume);
 	  this.renderer.render();
-	  
+	  //this.renderer.onShowtime();
+	  this.volume = volume;
+	  	  
   }else{
 	  var reader = new FileReader();
 	  
@@ -182,32 +181,47 @@ VolumeURLViewerPlugin.prototype.loadFile = function(file) {
 			  
 			}
 			
-			
-			_this.renderer.onShowtime();
-
 			_this.renderer.add(volume);
 			_this.renderer.render();
 			
+			_this.renderer.onShowtime();
 			worker.terminate(); // bye, bye
-			
+			_this.volume = volume;
 		  };
 		  
 		};
 		
-	  })(file[0]);
+	  })(file);
 	  
 	  // Start reading the image off disk into a Data URI format.
-	  reader.readAsDataURL(file[0]);
+	  reader.readAsDataURL(file);
   }
 }
 
 VolumeURLViewerPlugin.prototype.serialize = function() {
   var serial_obj = {}
+  if(this.volume.file() != null){
+	serial_obj['volume'] = [this.volume.file().path]
+  }
   return serial_obj
 }
 
-VolumeURLViewerPlugin.prototype.load = function(load_obj) {
-
+VolumeURLViewerPlugin.prototype.destroy = function(){
+	//this.renderer.destroy();
+	this.gui.destroy();
+	
 }
+
+VolumeURLViewerPlugin.prototype.load = function(load_obj) {
+	if(load_obj.hasOwnProperty("volume")){
+		this.volume = new X.volume();
+		this.volume.load(load_obj['volume']);
+	}
+}
+
+VolumeURLViewerPlugin.prototype.destroy = function(){
+	this.gui.destroy();
+}
+
 
 nv_plugins[VolumeURLViewerPlugin.prototype.name] = VolumeURLViewerPlugin;

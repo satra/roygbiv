@@ -141,6 +141,7 @@ NV_Window.prototype = {
   destroy: function() {
 
     this.plugin.renderer.destroy()
+	this.plugin.destroy() //let the plugin delete the control panel
     this.div.html("")
     this.div.css({
       'background-color': 'white'
