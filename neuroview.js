@@ -37,17 +37,27 @@ NV_Window.prototype = {
     this.div.html(tbg)
     
     for (plugin in nv_plugins) {
+	  this.create_plugin_controls(nv_plugins[plugin].prototype.name);
       this.create_plugin_inputs(nv_plugins[plugin].prototype.name)
       break
 
     }
     var _this = this
     jQuery("#select_" + this.div_name).change(function(evt) {
+	  _this.create_plugin_controls(evt.target.value);
       _this.create_plugin_inputs(evt.target.value)
     })
 
   },
 
+  create_plugin_controls: function(plugin){
+	var tbg=""
+	var plugin_controls = nv_plugins[plugin].prototype.control_rules
+	for(control in plugin_controls){
+		var foo = 1;
+	}
+  },
+  
   create_plugin_inputs: function(plugin) {
     var tbg = ""
     var plugin_inputs = nv_plugins[plugin].prototype.input_rules
@@ -68,7 +78,9 @@ NV_Window.prototype = {
           tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + "</label>"
           tbg += "<div class='controls'>"
           tbg += "<input id='file_" + this.div_name +
-                "_" + input + "' type='text' name='file' /></div></div>"
+                "_" + input + "' type='text' name='file' value='"
+		  tbg += (input_obj['initial'] != undefined) ? input_obj['initial'] : ""; //Is there a placeholder text?
+		  tbg +="'/></div></div>";
           break
 		case 'file-url':
 		  tbg += "<div class='control-group'>"
@@ -103,9 +115,11 @@ NV_Window.prototype = {
       console.log("HERE");
 
       _this.plugin = jQuery("#select_" + _this.div_name).attr('value');
+	  //NV_open_windows[_this.div_name.substring(2)].plugin
       var inputs = []
       for(var i = 0; i < nv_plugins[plugin].prototype.input_rules.length; i++)
       {
+		var input_obj = nv_plugins[plugin].prototype.input_rules[i];
         switch (input_obj['type'])
         {
           case 'file':
@@ -118,6 +132,7 @@ NV_Window.prototype = {
 			if(document.getElementById("file_" + _this.div_name + "_" + i+"_0").value != ''){
 				inputs.push(document.getElementById("file_" + _this.div_name + "_" + i+"_0").files[0]);
 			}else{inputs.push(document.getElementById("file_" + _this.div_name + "_" + i+"_1").value);}
+			break;
         }
       }
       create_plugin_UI(_this);

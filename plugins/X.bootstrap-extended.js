@@ -37,7 +37,7 @@ function parse(data) {
 
   xParser.parse(xObject, data);
   self.postMessage(xObject);
-  
+  self.close();
 }
 
 self.onmessage = function(event) {
