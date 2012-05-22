@@ -112,8 +112,6 @@ NV_Window.prototype = {
 
     });*/
     temp_button.click(function() {
-      console.log("HERE");
-
       _this.plugin = jQuery("#select_" + _this.div_name).attr('value');
 	  //NV_open_windows[_this.div_name.substring(2)].plugin
       var inputs = []
@@ -278,7 +276,6 @@ function save_windows() {
     for ( var j = 0; j < NV_cols; j++) {
 
       save_obj[i + '_' + j] = NV_open_windows[i + '_' + j]!=null ? NV_open_windows[i + '_' + j].serialize() : null;
-
     }
   }
 
@@ -294,7 +291,6 @@ function load_windows() {
   make_window_grid(NV_rows, NV_cols)
   for ( var i = 0; i < NV_rows; i++) {
     for ( var j = 0; j < NV_cols; j++) {
-
       if(NV_open_windows[i + '_' + j] && load_obj[i + '_' + j])
       {
         NV_open_windows[i + '_' + j].load(load_obj[i + '_' + j])
