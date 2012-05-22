@@ -1,7 +1,7 @@
 MultiModalViewerPlugin = function () {
   this.init()
   this.xObjs =  {'volumes': [], 'surfaces':[], 'tracks': []};
-  this.xInputs = []; //File Urls? 
+  this.xInputs = []; //Local File Urls? For the future
 }
 
 /*
@@ -23,26 +23,26 @@ MultiModalViewerPlugin = function () {
 MultiModalViewerPlugin.prototype.name = "MultiModal Viewer"
 
 MultiModalViewerPlugin.prototype.input_rules = 
-[ {type: 'text', name: 'Volume', filetypes: ['nrrd', 'mgh', 'mgz'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/orig.mgh"}, 
-  {type: 'text', name: 'LabelMap', filetypes: ['nrrd', 'mgh', 'mgz'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/aseg.mgh"},
-  {type: 'text', name: 'ColorMap', filetypes: ['txt'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/FreeSurferColorLUT.txt"},
+[ {type: 'file-url', name: 'Volume', filetypes: ['nrrd', 'mgh', 'mgz'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/orig.mgh"}, 
+  {type: 'file-url', name: 'LabelMap', filetypes: ['nrrd', 'mgh', 'mgz'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/aseg.mgh"},
+  {type: 'file-url', name: 'ColorMap', filetypes: ['txt'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/FreeSurferColorLUT.txt"},
   {type: 'text', name: "Surface 1 Name", initial: "lh"},
-  {type: 'text', name: 'Surface 1', filetypes: ['fsm'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/lh.smoothwm.fsm"},
+  {type: 'file-url', name: 'Surface 1', filetypes: ['fsm'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/lh.smoothwm.fsm"},
   {type: 'text', name: "Surface 1 - Curve 1  Name", initial: "C"},
-  {type: 'text', name: 'Surface 1 - Curve 1', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/lh.smoothwm.C.crv"},
+  {type: 'file-url', name: 'Surface 1 - Curve 1', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/lh.smoothwm.C.crv"},
   {type: 'text', name: "Surface 1 - Curve 2 Name", initial: "H"},
-  {type: 'text', name: 'Surface 1 - Curve 2', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/lh.smoothwm.H.crv"},
+  {type: 'file-url', name: 'Surface 1 - Curve 2', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/lh.smoothwm.H.crv"},
   {type: 'text', name: "Surface 1 - Curve 3 Name", initial: "K1"},
-  {type: 'text', name: 'Surface 1 - Curve 3', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/lh.smoothwm.K1.crv"},
+  {type: 'file-url', name: 'Surface 1 - Curve 3', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/lh.smoothwm.K1.crv"},
   {type: 'text', name: "Surface 2 Name", initial: "rh"},
-  {type: 'text', name: 'Surface 2', filetypes: ['fsm'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/rh.smoothwm.fsm"},
+  {type: 'file-url', name: 'Surface 2', filetypes: ['fsm'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/rh.smoothwm.fsm"},
   {type: 'text', name: "Surface 2 - Curve 1 Name", initial: "C"},
-  {type: 'text', name: 'Surface 2 - Curve 1', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/rh.smoothwm.C.crv"},
+  {type: 'file-url', name: 'Surface 2 - Curve 1', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/rh.smoothwm.C.crv"},
   {type: 'text', name: "Surface 2 - Curve 2 Name", initial: "H"},
-  {type: 'text', name: 'Surface 2 - Curve 2', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/rh.smoothwm.H.crv"},
+  {type: 'file-url', name: 'Surface 2 - Curve 2', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/rh.smoothwm.H.crv"},
   {type: 'text', name: "Surface 2 - Curve 3 Name", initial: "K1"},
-  {type: 'text', name: 'Surface 2 - Curve 3', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/rh.smoothwm.K1.crv"},
-  {type: 'text', name: 'Track', filetypes: ['trk', 'vtk'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/brainfibers.trk"},  
+  {type: 'file-url', name: 'Surface 2 - Curve 3', filetypes: ['crv'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/rh.smoothwm.K1.crv"},
+  {type: 'file-url', name: 'Track', filetypes: ['trk', 'vtk'], initial: "http://web.mit.edu/willcu/www/roygbiv/teenage/brainfibers.trk"},  
   {type: 'text', name: "Transform Matrix", 
   initial: "[[ -1.96000,    0.00000 ,   0.00000 , 110.00000 ]"+
   ",[0.00000 ,   0.00000  ,  -2.0000 , 76.00000 ]"+
@@ -60,6 +60,8 @@ MultiModalViewerPlugin.prototype.init = function() {
 
 MultiModalViewerPlugin.prototype.destroy = function(){
 	this.gui.destroy();
+	this.xObjs = new Object();
+	
 }
 
 
@@ -438,6 +440,7 @@ MultiModalViewerPlugin.prototype.flipVolume=function(){
 }
 
 MultiModalViewerPlugin.prototype.getParser = function(extension){
+  var xParser;
   switch (extension) {
   case 'VTK':
     xParser = new X.parserVTK();
@@ -467,6 +470,9 @@ MultiModalViewerPlugin.prototype.getParser = function(extension){
 }
 
 MultiModalViewerPlugin.prototype.readFile = function(file, xObject){
+	console.log("Read File");
+	console.log(xObject);
+	console.log(file);
 	var reader = new FileReader();
 	  
 	// Handle errors that might occur while reading the file (before upload).
@@ -512,18 +518,13 @@ MultiModalViewerPlugin.prototype.readFile = function(file, xObject){
 		var extension = extension.toUpperCase();
 		data = window.atob(data.substring(base64StartIndex));
 		parser = _this.getParser(extension);
+		console.log(parser);
 		parser.parse(xObject, data);
 		};
 	})(file);
 	
-	reader.onloadend = function(e){
-		console.log(e);
-	}
-	
-	
 	// Start reading the image off disk into a Data URI format.
 	reader.readAsDataURL(file);
-	return output;
 }
 
 MultiModalViewerPlugin.prototype.readFileColorTable = function(file,xLabelMap){
@@ -562,7 +563,6 @@ MultiModalViewerPlugin.prototype.readFileColorTable = function(file,xLabelMap){
 	var _this = this;
 	
 	reader.onload = (function(file) {
-
     return function(e) {
 		var data = e.target.result;		  
 		var base64StartIndex = data.indexOf(',') + 1;
@@ -584,7 +584,7 @@ MultiModalViewerPlugin.prototype.serialize = function() {
 
 MultiModalViewerPlugin.prototype.load = function(load_obj) {
 	//pass don't need to do anything;
-	//May need to do something
+	//May need to do something for local files.
 }
 
 nv_plugins[MultiModalViewerPlugin.prototype.name] = MultiModalViewerPlugin;

@@ -91,7 +91,9 @@ NV_Window.prototype = {
           tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + " URL</label>"
           tbg += "<div class='controls'>"
           tbg += "<input id='file_" + this.div_name +
-                "_" + input + "_1' type='text' name='file' /></div></div>"
+                "_" + input + "_1' type='text' name='file' value='" 
+		  tbg += (input_obj['initial'] != undefined) ? input_obj['initial'] : ""; //Is there a placeholder text?
+		  tbg +="'/></div></div>"
           break
       }
 
