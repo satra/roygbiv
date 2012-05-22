@@ -798,12 +798,11 @@ MultiModalViewerPlugin.prototype.parseColorTable = function(extension, data, lab
 }
 
 MultiModalViewerPlugin.prototype.serialize = function() {
-  var serial_obj = {}
-  return serial_obj
+  return this.inputs;
 }
 
 MultiModalViewerPlugin.prototype.load = function(load_obj) {
-
+	//pass don't need to do anything;
 }
 
 nv_plugins[MultiModalViewerPlugin.prototype.name] = MultiModalViewerPlugin;
