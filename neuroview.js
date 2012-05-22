@@ -37,17 +37,27 @@ NV_Window.prototype = {
     this.div.html(tbg)
     
     for (plugin in nv_plugins) {
+	  this.create_plugin_controls(nv_plugins[plugin].prototype.name);
       this.create_plugin_inputs(nv_plugins[plugin].prototype.name)
       break
 
     }
     var _this = this
     jQuery("#select_" + this.div_name).change(function(evt) {
+	  _this.create_plugin_controls(evt.target.value);
       _this.create_plugin_inputs(evt.target.value)
     })
 
   },
 
+  create_plugin_controls: function(plugin){
+	var tbg=""
+	var plugin_controls = nv_plugins[plugin].prototype.control_rules
+	for(control in plugin_controls){
+		var foo = 1;
+	}
+  },
+  
   create_plugin_inputs: function(plugin) {
     var tbg = ""
     var plugin_inputs = nv_plugins[plugin].prototype.input_rules
@@ -62,6 +72,28 @@ NV_Window.prototype = {
           tbg += "<div class='controls'>"
           tbg += "<input id='file_" + this.div_name +
                 "_" + input + "' type='file' name='file' /></div></div>"
+          break
+		case 'text':
+		  tbg += "<div class='control-group'>"
+          tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + "</label>"
+          tbg += "<div class='controls'>"
+          tbg += "<input id='file_" + this.div_name +
+                "_" + input + "' type='text' name='file' value='"
+		  tbg += (input_obj['initial'] != undefined) ? input_obj['initial'] : ""; //Is there a placeholder text?
+		  tbg +="'/></div></div>";
+          break
+		case 'file-url':
+		  tbg += "<div class='control-group'>"
+		  tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + "</label>"
+          tbg += "<div class='controls'>"
+          tbg += "<input id='file_" + this.div_name +
+                "_" + input + "_0' type='file' name='file' /></div>";
+          tbg += "<label class='control-label' for='file_input'>" + input_obj['name'] + " URL</label>"
+          tbg += "<div class='controls'>"
+          tbg += "<input id='file_" + this.div_name +
+                "_" + input + "_1' type='text' name='file' value='" 
+		  tbg += (input_obj['initial'] != undefined) ? input_obj['initial'] : ""; //Is there a placeholder text?
+		  tbg +="'/></div></div>"
           break
       }
 
@@ -82,18 +114,25 @@ NV_Window.prototype = {
 
     });*/
     temp_button.click(function() {
-      console.log("HERE");
-
       _this.plugin = jQuery("#select_" + _this.div_name).attr('value');
+	  //NV_open_windows[_this.div_name.substring(2)].plugin
       var inputs = []
       for(var i = 0; i < nv_plugins[plugin].prototype.input_rules.length; i++)
       {
+		var input_obj = nv_plugins[plugin].prototype.input_rules[i];
         switch (input_obj['type'])
         {
           case 'file':
             inputs.push(document.getElementById("file_" + _this.div_name + "_" + i).files[0])
             break
-
+		  case 'text':
+			inputs.push(document.getElementById("file_" + _this.div_name + "_" + i).value);
+			break
+		  case 'file-url':
+			if(document.getElementById("file_" + _this.div_name + "_" + i+"_0").value != ''){
+				inputs.push(document.getElementById("file_" + _this.div_name + "_" + i+"_0").files[0]);
+			}else{inputs.push(document.getElementById("file_" + _this.div_name + "_" + i+"_1").value);}
+			break;
         }
       }
       create_plugin_UI(_this);
@@ -117,6 +156,7 @@ NV_Window.prototype = {
   destroy: function() {
 
     this.plugin.renderer.destroy()
+	this.plugin.destroy() //let the plugin delete the control panel
     this.div.html("")
     this.div.css({
       'background-color': 'white'
@@ -238,7 +278,6 @@ function save_windows() {
     for ( var j = 0; j < NV_cols; j++) {
 
       save_obj[i + '_' + j] = NV_open_windows[i + '_' + j]!=null ? NV_open_windows[i + '_' + j].serialize() : null;
-
     }
   }
 
@@ -254,7 +293,6 @@ function load_windows() {
   make_window_grid(NV_rows, NV_cols)
   for ( var i = 0; i < NV_rows; i++) {
     for ( var j = 0; j < NV_cols; j++) {
-
       if(NV_open_windows[i + '_' + j] && load_obj[i + '_' + j])
       {
         NV_open_windows[i + '_' + j].load(load_obj[i + '_' + j])
