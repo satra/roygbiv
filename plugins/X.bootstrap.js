@@ -47,8 +47,9 @@ self.onmessage = function(event) {
   var stream = _data[1];
   
   xObject = new X.object();
-  
+
   switch (extension) {
+
   case 'VTK':
     xParser = new X.parserVTK();
     break;
@@ -61,6 +62,14 @@ self.onmessage = function(event) {
   case 'NRRD':
     xObject = new X.volume();
     xParser = new X.parserNRRD();
+    break;
+  case 'MGH':
+    xObject = new X.volume();
+    xParser = new X.parserMGZ();
+    break;
+  case 'MGZ':
+    xObject = new X.volume();
+    xParser = new X.parserMGZ();
     break;
   default:
     xParser = new X.parserFSM();

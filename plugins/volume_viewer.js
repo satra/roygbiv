@@ -201,5 +201,7 @@ VolumeViewerPlugin.prototype.serialize = function() {
 VolumeViewerPlugin.prototype.load = function(load_obj) {
 
 }
+VolumeViewerPlugin.prototype.destroy = function(){
+}
 
 nv_plugins[VolumeViewerPlugin.prototype.name] = VolumeViewerPlugin;
