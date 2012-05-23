@@ -252,10 +252,59 @@ var NV_open_windows = new Array()
 
 
 jQuery(window).load(function() {
+  create_extras();//creates an invisible message div on the bottom left
 
   set_sizes();
   make_window_grid(1, 1)
 });
+
+function create_extras()
+{
+    //create the message div
+    jQuery('<div/>', {
+        
+        'id' : 'message_div',
+        'height' : '20px',
+        'width' : '500px'
+
+    }).appendTo('body')
+    jQuery("#message_div").css({
+        'position': 'fixed',
+        'left': '0px',
+        'bottom' : '0px',
+        'background-color' : '#C0C0C0',
+        'padding': '5px',
+        'padding-left':'10px',
+        'opacity' : '0'
+    })
+    //create the hidden file input for loading JSON
+    jQuery('<input/>', {
+        'type' : 'file',
+        'id' : 'load_layout_file',
+    }).appendTo('body')
+    jQuery('#load_layout_file').css({
+        'display' : 'none'
+    })
+
+    jQuery("#load_layout_file").change(function(evt) {
+        var files = evt.target.files; // FileList object
+
+        // Loop through the FileList and render image files as thumbnails.
+        for (var i = 0, f; f = files[i]; i++) {
+
+        var reader = new FileReader();
+
+        // Closure to capture the file information.
+        reader.onload = function(e) {
+            load_windows_with_string(e.target.result)
+        };
+
+        reader.readAsText(f);
+        }
+    })
+
+
+}
 
 function set_sizes() {
 
@@ -270,6 +319,13 @@ function clear_windows() {
   }
 }
 
+function show_message(text) {
+    var message_div = jQuery("#message_div")
+    message_div.css({'opacity': 1})
+    message_div.html(text)
+    setTimeout(function() {message_div.animate({opacity: 0}, 2000)}, 2000)
+}
+
 function save_windows() {
   var save_obj = {}
   save_obj['rows'] = NV_rows
@@ -281,27 +337,122 @@ function save_windows() {
     }
   }
 
+
   localStorage.setItem("NV_temp", JSON.stringify(save_obj))
+
+  write_to_local_file(JSON.stringify(save_obj))
   console.log(JSON.stringify(save_obj))
   
 }
 
-function load_windows() {
-  var load_obj = JSON.parse(localStorage.getItem("NV_temp"));
-  NV_rows = load_obj['rows']
-  NV_cols = load_obj['cols']
-  make_window_grid(NV_rows, NV_cols)
-  for ( var i = 0; i < NV_rows; i++) {
-    for ( var j = 0; j < NV_cols; j++) {
-      if(NV_open_windows[i + '_' + j] && load_obj[i + '_' + j])
-      {
-        NV_open_windows[i + '_' + j].load(load_obj[i + '_' + j])
-      }
+function write_to_local_file(string) {
+  if(window.webkitRequestFileSystem)
+  {
+    window.webkitRequestFileSystem(window.TEMPORARY, 1024*1024, function(fs) {
+      fs.root.getFile('layout.json', {create: true}, function(fileEntry) {
+        fileEntry.createWriter(function(fileWriter) {
+          var arr = new Uint8Array(3);
+                    
+          var builder = new WebKitBlobBuilder();
+          builder.append(string);
+          var blob = builder.getBlob();
+                    
+          fileWriter.onwriteend = function() {
+          // navigate to file, will download
+            location.href = fileEntry.toURL();
+          };
+      
+          fileWriter.write(blob);
+        }, errorHandler);
+      }, errorHandler);
+    }, errorHandler);
+    show_message("layout downloaded to Downloads folder as layout.json")
+    function errorHandler(e) {
+      var msg = '';
 
+      switch (e.code) {
+        case FileError.QUOTA_EXCEEDED_ERR:
+          msg = 'QUOTA_EXCEEDED_ERR';
+          break;
+        case FileError.NOT_FOUND_ERR:
+          msg = 'NOT_FOUND_ERR';
+          break;
+        case FileError.SECURITY_ERR:
+          msg = 'SECURITY_ERR';
+          break;
+        case FileError.INVALID_MODIFICATION_ERR:
+          msg = 'INVALID_MODIFICATION_ERR';
+          break;
+        case FileError.INVALID_STATE_ERR:
+          msg = 'INVALID_STATE_ERR';
+          break;
+        default:
+          msg = 'Unknown Error';
+          break;
+      };
+
+      console.Log('Error: ' + msg);
     }
   }
+  else
+  {       
+    console.log("NO WEBKIT")
+    netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
+    Components.utils.import("resource://gre/modules/FileUtils.jsm");  
+  
+    // get the "data.txt" file in the profile directory  
+    var file = FileUtils.getFile("Desk", ["layout.json"]);  
+    Components.utils.import("resource://gre/modules/NetUtil.jsm");  
+  
+    // file is nsIFile, data is a string  
+  
+    // You can also optionally pass a flags parameter here. It defaults to  
+    // FileUtils.MODE_WRONLY | FileUtils.MODE_CREATE | FileUtils.MODE_TRUNCATE;  
+    var ostream = FileUtils.openSafeFileOutputStream(file)  
+  
+    var converter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"].  
+                createInstance(Components.interfaces.nsIScriptableUnicodeConverter);  
+    converter.charset = "UTF-8";  
+    var istream = converter.convertToInputStream(string);  
+  
+    // The last argument (the callback) is optional.  
+    NetUtil.asyncCopy(istream, ostream, function(status) {  
+      if (!Components.isSuccessCode(status)) {  
+        // Handle error!  
+        return  
+      }  
+    })
+
+    show_message("layout downloaded to Desktop as layout.json")
+  }
+}
+
+function load_windows() {
   
 
+  jQuery("#load_layout_file").click()
+
+ 
+}
+
+function load_windows_with_string(str)
+{
+  var load_obj = JSON.parse(str);
+  if(load_obj!=null)
+  {
+      NV_rows = load_obj['rows']
+      NV_cols = load_obj['cols']
+      make_window_grid(NV_rows, NV_cols)
+      for ( var i = 0; i < NV_rows; i++) {
+        for ( var j = 0; j < NV_cols; j++) {
+          if(NV_open_windows[i + '_' + j] && load_obj[i + '_' + j])
+          {
+            NV_open_windows[i + '_' + j].load(load_obj[i + '_' + j])
+          }
+
+        }
+      }
+  }
 }
 
 function make_window_grid(n_rows, n_cols) {
@@ -327,10 +478,10 @@ function make_window_grid(n_rows, n_cols) {
         'top': jQuery(".navbar").height() + Math.round(c_height / n_rows * i) +
             'px',
         'height': (Math.round(c_height / n_rows * (i + 1)) - Math
-            .round(c_height / n_rows * i)) +
+            .round(c_height / n_rows * i) - 2) +
             'px',
         'width': (Math.round(c_width / n_cols * (j + 1)) - Math.round(c_width /
-            n_cols * j)) +
+            n_cols * j) - 2) +
             'px',
         'border': '1px #ddd solid',
       })
